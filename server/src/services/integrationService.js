@@ -17,7 +17,7 @@ const GOOGLE_SCOPES = [
  */
 export const generateGoogleAuthUrl = (userId) => {
   const clientId = process.env.GOOGLE_CLIENT_ID || 'mock-google-client-id.apps.googleusercontent.com';
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${process.env.CLIENT_URL || 'http://localhost:3000'}/integrations?provider=google`;
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${process.env.CLIENT_URL || 'http://localhost:3000'}/integrations`;
   const scopeString = encodeURIComponent(GOOGLE_SCOPES.join(' '));
 
   return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(
