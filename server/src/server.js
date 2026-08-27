@@ -61,6 +61,18 @@ if (env.NODE_ENV !== 'test') {
   app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 }
 
+// Root API Welcome Endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({
+    name: 'Agentflow_AI (LedgerFlow) Backend API',
+    status: 'online',
+    version: '1.0.0',
+    documentation: 'https://github.com/Siddharth0317/LedgerFlow_AI#readme',
+    healthCheck: '/api/health',
+    clientUrl: env.CLIENT_URL || 'https://ledger-flow-ai-drab.vercel.app',
+  });
+});
+
 // Health check endpoint (Section 5.1)
 app.get('/api/health', (req, res) => {
   res.status(200).json({
