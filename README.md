@@ -1,4 +1,4 @@
-# ⚡ Agentflow_AI (LedgerFlow)
+# ⚡ LedgerFlow_AI
 ### Autonomous Multi-Agent Invoice & Expense Operations Hub
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -14,44 +14,76 @@
 
 ## 📖 Overview
 
-**Agentflow_AI** is an enterprise-grade, autonomous multi-agent financial automation platform designed to eliminate manual data entry, human computation errors, and reconciliation delays in accounts payable (AP) workflows.
+**LedgerFlow_AI** is an enterprise-grade, autonomous multi-agent financial automation platform designed to eliminate manual data entry, human computation errors, and reconciliation delays in accounts payable (AP) workflows.
 
 The system uses a sequential **5-agent pipeline** powered by Google Gemini and OpenRouter LLMs to intake incoming invoice PDFs, extract structured financial records, verify mathematical arithmetic formulas with strict assertion proofs ($|\text{subtotal} + \text{tax} - \text{totalAmount}| < 0.01$), and automatically commit verified ledger entries to Google Sheets while broadcasting audit alerts to Slack and Discord.
 
 ---
 
-## 🚀 Key Features
+## 🎯 How to Use LedgerFlow_AI (Step-by-Step User Guide)
 
-### 1. 🎨 Visual Drag-and-Drop Workflow Canvas
-- Built with **React Flow 12** featuring smooth step edges and custom animated connection handles.
-- **4 Specialized Node Types**:
-  - 📥 **Trigger Node**: Polls Gmail inboxes or receives direct webhook invoice payloads.
-  - 🧠 **AI Parser Node**: Executes multimodal OCR and schema extraction via Google Gemini.
-  - ⚖️ **Logic Node**: Enforces financial formula assertion rules (`subtotal + tax == totalAmount`).
-  - 📤 **Action Node**: Appends rows to Google Sheets and dispatches Slack / Discord notifications.
-- Interactive **Node Inspector Drawer**, canvas pan/zoom controls, DAG validation, and workflow duplication.
+### 1. 🔑 Sign In & Operations Console (`/dashboard`)
+1. Open the application at **`http://localhost:3000`** (or your live Vercel domain).
+2. Click **"Create an account"** (`/register`) or sign in (`/login`).
+3. View your live **Operations Console**:
+   - **Active Automations**: Count of configured invoice workflows.
+   - **Invoices Processed**: Real-time count of completed ledger transactions.
+   - **Math Validation Rate**: Arithmetic assertion accuracy percentage ($100\%$).
+   - **Autonomous Agents**: 5 active pipeline agents.
 
-### 2. ✨ AI Prompt-to-Workflow Generator (`/workflows/builder`)
-- Generate fully wired, multi-node DAG workflows from plain English text prompts (e.g. *"Extract invoices from Gmail, verify subtotal + tax equals total, and notify Slack"*).
-- Powered by **Google Gemini 2.5 Flash** with deterministic rule-based fallback and confidence score evaluation (`99%`).
+---
 
-### 3. 🤖 5-Agent Autonomous Orchestration Engine
-- **1. Planner Agent**: Validates DAG topology, eliminates circular graph cycles, and computes optimal execution order via topological sort.
-- **2. Execution Agent**: Parses invoices into structured JSON schema (`vendorName`, `subtotal`, `tax`, `totalAmount`, `lineItems`).
-- **3. Validation Agent**: Enforces strict mathematical assertions ($|(\text{subtotal} + \text{tax}) - \text{totalAmount}| < 0.01$). If arithmetic fails, the pipeline halts to prevent fraudulent or corrupted entries.
-- **4. Recovery Agent**: Classifies runtime errors (`FINANCIAL_MISMATCH`, `AUTH_EXPIRED`, `RATE_LIMIT`) and initiates exponential backoff retries.
-- **5. Monitoring Agent**: Records immutable audit logs in MongoDB and streams live telemetry.
+### 2. ✨ Method A: Generate an Automation via AI Prompt Studio (`/workflows/builder`)
+1. Click **"AI Prompt Studio"** from the top header or navigation.
+2. Type your financial automation requirement in natural language, for example:
+   > *"Extract incoming vendor invoices from Gmail, parse line items and tax with Gemini, assert subtotal + tax equals total amount, and post verified records to Google Sheets with Slack notifications."*
+3. Click **"Generate Autonomous DAG"**.
+4. The AI architect will instantly construct a connected 4-node DAG graph with confidence scoring (`99%`).
+5. Click **"Open in Interactive Canvas"** to inspect and customize the visual nodes.
 
-### 4. ⚡ Real-Time WebSockets & Background Queue Workers
-- **Socket.IO Real-Time Streaming**: Live execution timelines on `/executions/[id]` receive instant log events (`execution:log`) and step transitions (`execution:step`) with sub-millisecond latency.
-- **Background Execution Queue**: Event-driven queue processor with concurrency controls and deterministic in-memory worker fallback.
-- **Execution State Controls**: Interactive **Pause**, **Resume**, and **Cancel** operations on active runs.
+---
 
-### 5. 🔒 Third-Party Integrations & AES-256 Cryptography
-- **Google Workspace OAuth**: Gmail API and Google Sheets API integration with encrypted token storage.
-- **Slack & Discord Webhook Bots**: Real-time channel alert dispatchers with interactive "Send Test Alert" verification.
-- **AES-256-CBC Cryptography**: All OAuth tokens, refresh keys, and webhook URLs are encrypted at rest with dynamic 16-byte initialization vectors (`IV`).
-- **In-App Notification Center**: Live notification feed with unread count badges and one-click "Mark All Read".
+### 3. 🎨 Method B: Visual Drag-and-Drop Canvas (`/workflows`)
+1. Navigate to **Workflows** (`/workflows`) and click **"Create Workflow"**.
+2. Click **"Canvas"** on any workflow card to enter the visual DAG editor.
+3. **4 Custom DAG Nodes**:
+   - 📥 **Trigger Node**: Set up Gmail search queries (`has:attachment filename:pdf invoice`) or webhook intake.
+   - 🧠 **AI Parser Node**: Configure Gemini extraction schema (`vendorName`, `subtotal`, `tax`, `totalAmount`, `lineItems`).
+   - ⚖️ **Logic Node**: Define financial formula assertions (`subtotal + tax == totalAmount`) and tolerance thresholds.
+   - 📤 **Action Node**: Designate Google Sheets ledger targets and Slack / Discord notification channels.
+4. Drag connection handles between nodes to define execution paths, and click **"Save Workflow"**.
+
+---
+
+### 4. ⚡ Running Executions & Live WebSocket Inspector (`/executions/[id]`)
+1. Inside the workflow canvas, click the green **"Execute"** button (or click **"Run"** from the Workflows table).
+2. You will be automatically redirected to the **Live Execution Inspector** (`/executions/[id]`).
+3. Watch the **Live WebSocket Stream**:
+   - The top status pill pulses **`Live WebSocket`** with real-time log events.
+   - **Live Audit Logs Tab**: View timestamped agent transitions (Planner $\rightarrow$ Execution $\rightarrow$ Validation $\rightarrow$ Monitoring).
+   - **Extracted Financial JSON Tab**: Inspect structured vendor, tax, and line item payloads.
+   - **Mathematical Formula Integrity Tab**: Review arithmetic proof cards proving $|\text{subtotal} + \text{tax} - \text{totalAmount}| = 0.00$.
+4. Use the **Pause**, **Resume**, or **Cancel** buttons to control active background worker runs on the fly.
+
+---
+
+### 5. 🔌 Connecting Third-Party Integrations (`/integrations`)
+1. Navigate to **Integrations & OAuth** (`/integrations`).
+2. **Google Workspace**:
+   - Click **Connect Google Workspace**, enter your account email and ledger sheet name, or click **"Authorize via Google Sign-In"** to grant `gmail.readonly` and `spreadsheets` scopes.
+3. **Slack Bot**:
+   - Enter your Slack Incoming Webhook URL and channel (e.g. `#finance-alerts`).
+4. **Discord Bot**:
+   - Enter your Discord Webhook URL and channel name for escalation alerts.
+5. Click **"Send Test Alert"** / **"Test Scopes"** to verify end-to-end encrypted dispatch.
+
+---
+
+### 6. ⚙️ Managing Settings & Roles (`/settings`)
+1. Navigate to **Settings** (`/settings`).
+2. View **Operator Profile** details, active JWT session status, and tenant isolation.
+3. Review **Roles & Permissions** comparing **Operator** vs. **Admin** access.
+4. Inspect live **Cryptographic Standards** (AES-256-CBC token encryption at rest, Bcrypt cost 12 password hashing) and **Infrastructure Diagnostics**.
 
 ---
 
@@ -110,6 +142,7 @@ LedgerFlow_AI/
 │   │   │   ├── index.js             # Landing Page
 │   │   │   ├── dashboard.js         # Operations Console & Metrics
 │   │   │   ├── login.js & register.js # Authentication
+│   │   │   ├── settings.js          # Settings & Role Permissions
 │   │   │   ├── workflows/           # Workflows List, Canvas, & AI Studio
 │   │   │   ├── executions/          # History Table & Live Inspector
 │   │   │   └── integrations.js      # OAuth & Webhook Integrations Hub
@@ -139,8 +172,8 @@ LedgerFlow_AI/
 │   ├── tests/                       # Automated End-to-End Test Suites
 │   └── package.json
 │
-├── render.yaml                      # Render Production Backend Blueprint
 ├── spec.md                          # Full Architecture & Requirements Spec
+├── LICENSE                          # MIT License
 └── README.md
 ```
 
@@ -174,7 +207,7 @@ Create a `.env` file in `server/`:
 PORT=5000
 NODE_ENV=development
 CLIENT_URL=http://localhost:3000
-MONGODB_URI=mongodb://localhost:27017/agentflow_ai
+MONGODB_URI=mongodb://localhost:27017/ledgerflow_ai
 JWT_SECRET=your_jwt_secret_key_change_in_production
 JWT_EXPIRES_IN=7d
 
@@ -243,8 +276,12 @@ cd client && npm run build
 
 ### Backend (Render)
 1. Link your GitHub repository to [Render](https://render.com).
-2. Create a new service from the [`render.yaml`](./render.yaml) blueprint.
-3. Configure environment variables in the Render dashboard:
+2. Create a new **Web Service**:
+   - **Root Directory**: `server`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Health Check Path**: `/api/health`
+3. Configure environment variables:
    `MONGODB_URI`, `JWT_SECRET`, `CREDENTIAL_ENCRYPTION_KEY`, `GEMINI_API_KEY`, `CLIENT_URL`.
 
 ### Frontend (Vercel)
