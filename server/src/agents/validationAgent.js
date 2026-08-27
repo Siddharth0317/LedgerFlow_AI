@@ -49,7 +49,7 @@ export const runValidationAgent = async ({ node, inputData = {} }) => {
       code: 'MATH_MISMATCH',
       mathProof,
       delta,
-      message: `Financial arithmetic assertion failed: Subtotal ($${subtotal}) + Tax ($${tax}) = $${expectedTotal.toFixed(2)}, but invoice states $${totalAmount} (delta = $${delta.toFixed(2)} > tolerance $${tolerance})`,
+      message: `Financial arithmetic assertion failed: Subtotal (₹${subtotal.toLocaleString('en-IN')}) + GST/Tax (₹${tax.toLocaleString('en-IN')}) = ₹${expectedTotal.toFixed(2)}, but invoice states ₹${totalAmount.toLocaleString('en-IN')} (delta = ₹${delta.toFixed(2)} > tolerance ₹${tolerance})`,
     };
   }
 
@@ -58,7 +58,7 @@ export const runValidationAgent = async ({ node, inputData = {} }) => {
     code: 'VALIDATION_PASSED',
     mathProof,
     delta,
-    message: `Math validation passed: |($${subtotal.toFixed(2)} + $${tax.toFixed(2)}) - $${totalAmount.toFixed(2)}| = $${delta.toFixed(2)} <= $${tolerance}`,
+    message: `Math validation passed: |(₹${subtotal.toFixed(2)} + ₹${tax.toFixed(2)}) - ₹${totalAmount.toFixed(2)}| = ₹${delta.toFixed(2)} <= ₹${tolerance}`,
   };
 };
 

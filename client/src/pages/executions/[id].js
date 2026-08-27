@@ -413,7 +413,7 @@ export default function ExecutionInspectorPage() {
                       : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
                   }`}
                 >
-                  {isMathValid ? 'ASSERTION PASSED (Delta = $0.00)' : 'ASSERTION FAILED'}
+                  {isMathValid ? 'ASSERTION PASSED (Delta = ₹0.00)' : 'ASSERTION FAILED'}
                 </span>
               </div>
 
@@ -421,19 +421,19 @@ export default function ExecutionInspectorPage() {
                 <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
                   <span className="text-xs text-slate-400 font-medium">Subtotal</span>
                   <p className="text-xl font-bold font-mono text-white mt-1">
-                    ${subtotal !== undefined ? parseFloat(subtotal).toFixed(2) : '0.00'}
+                    ₹{subtotal !== undefined ? parseFloat(subtotal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
                   </p>
                 </div>
                 <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
-                  <span className="text-xs text-slate-400 font-medium">Tax</span>
+                  <span className="text-xs text-slate-400 font-medium">GST / Tax</span>
                   <p className="text-xl font-bold font-mono text-white mt-1">
-                    + ${tax !== undefined ? parseFloat(tax).toFixed(2) : '0.00'}
+                    + ₹{tax !== undefined ? parseFloat(tax).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
                   </p>
                 </div>
                 <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
                   <span className="text-xs text-slate-400 font-medium">Total Amount</span>
                   <p className="text-xl font-bold font-mono text-emerald-400 mt-1">
-                    = ${totalAmount !== undefined ? parseFloat(totalAmount).toFixed(2) : '0.00'}
+                    = ₹{totalAmount !== undefined ? parseFloat(totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
                   </p>
                 </div>
               </div>

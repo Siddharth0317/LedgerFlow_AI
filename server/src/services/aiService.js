@@ -203,69 +203,43 @@ export const generateWorkflowGraph = async (prompt) => {
   const openRouterKey = process.env.OPENROUTER_API_KEY;
 
   const systemInstruction = `You are an expert autonomous financial workflow architect for LedgerFlow_AI.
-Given a user request describing financial invoice/expense automation, construct an acyclic DAG visual workflow JSON object conforming EXACTLY to:
+Given a user request describing financial invoice/expense automation (supporting Indian Rupee ₹ / INR, GST/IGST/CGST/SGST, and global accounts payable), construct an acyclic DAG visual workflow JSON object conforming EXACTLY to:
 {
   "name": "Concise Workflow Title (max 60 chars)",
-  "description": "Clear explanation of workflow operation",
-  "triggerConfig": {
-    "type": "gmail|webhook|schedule|manual",
-    "config": { "query": "string" }
-  },
+  "description": "Brief operational summary of this invoice DAG (max 150 chars)",
+  "confidenceScore": 0.95,
   "nodes": [
     {
       "id": "node-1",
       "type": "triggerNode",
-      "position": { "x": 80, "y": 160 },
-      "data": {
-        "label": "Trigger Label",
-        "triggerType": "gmail|webhook|schedule|manual",
-        "description": "Trigger details",
-        "query": "query filter"
-      }
+      "position": { "x": 80, "y": 150 },
+      "data": { "label": "Gmail / Webhook Ingestion", "triggerType": "gmail", "query": "label:inbox has:attachment invoice pdf" }
     },
     {
       "id": "node-2",
       "type": "aiNode",
-      "position": { "x": 420, "y": 160 },
-      "data": {
-        "label": "Gemini Extraction Agent",
-        "model": "gemini-2.5-pro",
-        "extractionFields": ["vendorName", "invoiceDate", "subtotal", "tax", "totalAmount", "lineItems"],
-        "confidenceThreshold": 0.90
-      }
+      "position": { "x": 420, "y": 150 },
+      "data": { "label": "Gemini Invoice Parser", "model": "gemini-1.5-pro", "extractionFields": ["vendorName", "invoiceDate", "subtotal", "tax", "totalAmount", "lineItems", "gstNumber"] }
     },
     {
       "id": "node-3",
       "type": "logicNode",
-      "position": { "x": 760, "y": 160 },
-      "data": {
-        "label": "Financial Formula Assertion",
-        "rule": "subtotal + tax == totalAmount",
-        "tolerance": 0.01
-      }
+      "position": { "x": 760, "y": 150 },
+      "data": { "label": "Financial Formula Assertion", "rule": "subtotal + tax == totalAmount", "tolerance": 0.01 }
     },
     {
       "id": "node-4",
       "type": "actionNode",
-      "position": { "x": 1100, "y": 160 },
-      "data": {
-        "label": "Google Sheet & Slack",
-        "actionType": "google-sheets|slack|discord",
-        "sheetId": "Company_Ledger_2026",
-        "channel": "#finance-ops"
-      }
+      "position": { "x": 1100, "y": 150 },
+      "data": { "label": "Google Sheets Ledger & Slack", "actionType": "google-sheets", "sheetId": "Company_Financial_Ledger_INR", "channel": "#finance-ops" }
     }
   ],
   "edges": [
-    { "id": "edge-1-2", "source": "node-1", "target": "node-2", "animated": true, "data": { "label": "Document Stream" } },
-    { "id": "edge-2-3", "source": "node-2", "target": "node-3", "animated": true, "data": { "label": "Extracted JSON" } },
-    { "id": "edge-3-4", "source": "node-3", "target": "node-4", "animated": true, "data": { "label": "Validated Record" } }
-  ],
-  "tags": ["Invoice", "Operations", "AI-Generated"],
-  "confidenceScore": 0.98,
-  "explanation": "Brief explanation of how the multi-agent nodes process the request"
+    { "id": "edge-1-2", "source": "node-1", "target": "node-2", "animated": true },
+    { "id": "edge-2-3", "source": "node-2", "target": "node-3", "animated": true },
+    { "id": "edge-3-4", "source": "node-3", "target": "node-4", "animated": true }
+  ]
 }
-
 Ensure node coordinates progress horizontally (x: 80, 420, 760, 1100). OUTPUT STRICT RAW JSON ONLY. No markdown wrapping.`;
 
   // 1. Primary: Google Gemini API (gemini-2.5-flash / gemini-2.5-pro)

@@ -77,7 +77,7 @@ export const runExecutionAgent = async ({ node, inputPayload = {} }) => {
                 ...parsed,
                 extractedBy: 'Gemini 2.5 Flash Multi-Modal Vision',
               },
-              message: `Gemini extracted vendor: ${parsed.vendorName || inputPayload.vendorName}, total: $${parsed.totalAmount || inputPayload.totalAmount}`,
+              message: `Gemini extracted vendor: ${parsed.vendorName || inputPayload.vendorName}, total: ₹${parsed.totalAmount || inputPayload.totalAmount}`,
             };
           }
         }
@@ -86,19 +86,22 @@ export const runExecutionAgent = async ({ node, inputPayload = {} }) => {
       }
     }
 
-    // High fidelity fallback parsing
+    // High fidelity fallback parsing with Indian GST & INR standards
     return {
       success: true,
       data: {
-        vendorName: inputPayload.vendorName || 'Acme Cloud Infrastructure',
-        invoiceDate: inputPayload.invoiceDate || '2026-08-15',
-        subtotal: parseFloat(inputPayload.subtotal || 2400.0),
-        tax: parseFloat(inputPayload.tax || 240.0),
-        totalAmount: parseFloat(inputPayload.totalAmount || 2640.0),
-        lineItems: inputPayload.lineItems || [],
+        vendorName: inputPayload.vendorName || 'Tata Consultancy Services Ltd',
+        invoiceDate: inputPayload.invoiceDate || new Date().toISOString().split('T')[0],
+        subtotal: parseFloat(inputPayload.subtotal || 18400.0),
+        tax: parseFloat(inputPayload.tax || 3312.0), // 18% GST
+        totalAmount: parseFloat(inputPayload.totalAmount || 21712.0),
+        currency: 'INR',
+        lineItems: inputPayload.lineItems || [
+          { description: 'Cloud Infrastructure & Managed DevOps (Monthly)', amount: 18400.0, gstRate: '18%' },
+        ],
         extractedBy: 'LedgerFlow Extraction Engine (Deterministic)',
       },
-      message: `Extracted 6 financial fields for ${inputPayload.vendorName || 'Acme Cloud Infrastructure'}`,
+      message: `Extracted financial invoice records for ${inputPayload.vendorName || 'Tata Consultancy Services Ltd'} (₹21,712.00 INR)`,
     };
   }
 

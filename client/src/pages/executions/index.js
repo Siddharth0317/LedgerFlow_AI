@@ -185,7 +185,7 @@ export default function ExecutionsPage() {
                             {exec.duration ? `${exec.duration}ms` : '—'}
                           </td>
                           <td className="px-5 py-4 font-mono font-medium text-emerald-400">
-                            {totalAmount !== undefined ? `$${parseFloat(totalAmount).toFixed(2)}` : '—'}
+                            {totalAmount !== undefined ? `₹${parseFloat(totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}
                           </td>
                           <td className="px-5 py-4 text-slate-400 font-mono text-[11px]">
                             {new Date(exec.createdAt).toLocaleString()}

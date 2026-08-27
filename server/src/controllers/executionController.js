@@ -32,6 +32,12 @@ export const triggerWorkflowExecution = async (req, res, next) => {
       inputs: req.body.inputs || {
         source: 'manual_trigger',
         sampleInvoice: true,
+        vendorName: 'Infosys BPM Limited',
+        invoiceDate: new Date().toISOString().split('T')[0],
+        subtotal: 18400.0,
+        tax: 3312.0, // 18% GST
+        totalAmount: 21712.0,
+        currency: 'INR',
       },
     });
 
