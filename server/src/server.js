@@ -1,16 +1,26 @@
+import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import env from './config/env.js';
 import connectDB from './config/db.js';
+import { initSocket } from './config/socket.js';
+import { startExecutionWorker } from './workers/executionWorker.js';
 import authRoutes from './routes/authRoutes.js';
 import workflowRoutes from './routes/workflowRoutes.js';
 import executionRoutes from './routes/executionRoutes.js';
+import integrationRoutes from './routes/integrationRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
 // Initialize Express App
 const app = express();
+const httpServer = http.createServer(app);
+
+// Initialize Socket.IO Server & Background Queue Worker
+const io = initSocket(httpServer);
+startExecutionWorker();
 
 // Security Middleware (Helmet)
 app.use(helmet());
@@ -51,6 +61,7 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: env.NODE_ENV,
     version: '1.0.0',
+    websockets: 'active',
   });
 });
 
@@ -58,6 +69,8 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/workflows', workflowRoutes);
 app.use('/api/executions', executionRoutes);
+app.use('/api/integrations', integrationRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // 404 Fallback
 app.use(notFound);
@@ -71,9 +84,10 @@ const startServer = async () => {
     // Attempt MongoDB connection
     await connectDB();
 
-    const server = app.listen(env.PORT, () => {
+    const server = httpServer.listen(env.PORT, () => {
       console.log('====================================================');
       console.log(`🚀 Agentflow_AI Server running on port ${env.PORT}`);
+      console.log(`⚡ WebSockets: Socket.IO initialized`);
       console.log(`🌐 Environment: ${env.NODE_ENV}`);
       console.log(`🔒 CORS Origin: ${env.CLIENT_URL}`);
       console.log(`🩺 Health check: http://localhost:${env.PORT}/api/health`);
@@ -92,4 +106,5 @@ if (process.env.NODE_ENV !== 'test') {
   startServer();
 }
 
+export { app, httpServer, io };
 export default app;

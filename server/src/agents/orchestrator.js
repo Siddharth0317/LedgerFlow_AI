@@ -1,10 +1,12 @@
 import Execution from '../models/Execution.js';
 import AgentMemory from '../models/AgentMemory.js';
+import Notification from '../models/Notification.js';
 import { runPlannerAgent } from './plannerAgent.js';
 import { runExecutionAgent } from './executionAgent.js';
 import { runValidationAgent } from './validationAgent.js';
 import { runRecoveryAgent } from './recoveryAgent.js';
 import { runMonitoringAgent } from './monitoringAgent.js';
+import { emitExecutionStep, emitExecutionStatus } from '../config/socket.js';
 
 /**
  * Multi-Agent Orchestration Engine (Section 4)
@@ -24,6 +26,8 @@ export const executeWorkflowRun = async (executionId, customInput = {}) => {
   execution.status = 'RUNNING';
   execution.startTime = new Date();
   await execution.save();
+
+  emitExecutionStatus(executionId, { status: 'RUNNING', startTime: execution.startTime });
 
   await runMonitoringAgent({
     executionId,
@@ -100,6 +104,13 @@ export const executeWorkflowRun = async (executionId, customInput = {}) => {
 
       execution.currentNode = node.id;
       await execution.save();
+
+      emitExecutionStep(executionId, {
+        nodeId: node.id,
+        nodeType: node.type,
+        nodeLabel: node.data?.label || node.type,
+        status: 'PROCESSING',
+      });
 
       // --- Node Execution Step ---
       if (node.type === 'triggerNode' || node.type === 'aiNode' || node.type === 'actionNode') {
@@ -194,6 +205,22 @@ export const executeWorkflowRun = async (executionId, customInput = {}) => {
           };
           execution.outputs = currentPayload;
           await execution.save();
+
+          emitExecutionStatus(executionId, {
+            status: 'FAILED',
+            duration: execution.duration,
+            error: execution.error,
+          });
+
+          await Notification.create({
+            owner: execution.owner,
+            workflowId,
+            executionId,
+            type: 'VALIDATION_ERROR',
+            title: 'Validation Agent Assertion Discrepancy',
+            message: valResult.message,
+          });
+
           return execution;
         }
 
@@ -219,6 +246,12 @@ export const executeWorkflowRun = async (executionId, customInput = {}) => {
     execution.currentNode = null;
     await execution.save();
 
+    emitExecutionStatus(executionId, {
+      status: 'COMPLETED',
+      duration: execution.duration,
+      outputs: execution.outputs,
+    });
+
     await runMonitoringAgent({
       executionId,
       workflowId,
@@ -226,6 +259,15 @@ export const executeWorkflowRun = async (executionId, customInput = {}) => {
       level: 'success',
       message: `🎉 Workflow execution completed successfully in ${execution.duration}ms.`,
       metadata: { duration: execution.duration, status: 'COMPLETED' },
+    });
+
+    await Notification.create({
+      owner: execution.owner,
+      workflowId,
+      executionId,
+      type: 'EXECUTION_SUCCESS',
+      title: 'Workflow Execution Completed',
+      message: `Successfully processed invoice for ${currentPayload.vendorName || 'Vendor'} (Total: $${currentPayload.totalAmount || '0.00'})`,
     });
 
     return execution;
@@ -257,6 +299,12 @@ export const executeWorkflowRun = async (executionId, customInput = {}) => {
     execution.outputs = currentPayload;
     await execution.save();
 
+    emitExecutionStatus(executionId, {
+      status: 'FAILED',
+      duration: execution.duration,
+      error: execution.error,
+    });
+
     return execution;
   }
 };
@@ -271,6 +319,8 @@ export const pauseExecution = async (executionId, ownerId) => {
   if (execution.status === 'RUNNING') {
     execution.status = 'PAUSED';
     await execution.save();
+
+    emitExecutionStatus(executionId, { status: 'PAUSED' });
 
     await runMonitoringAgent({
       executionId,
@@ -294,6 +344,8 @@ export const resumeExecution = async (executionId, ownerId) => {
     execution.status = 'RUNNING';
     await execution.save();
 
+    emitExecutionStatus(executionId, { status: 'RUNNING' });
+
     // Trigger continuation asynchronously
     executeWorkflowRun(executionId, execution.inputs);
   }
@@ -313,6 +365,8 @@ export const cancelExecution = async (executionId, ownerId) => {
     execution.duration = execution.endTime - execution.startTime;
   }
   await execution.save();
+
+  emitExecutionStatus(executionId, { status: 'CANCELLED', duration: execution.duration });
 
   await runMonitoringAgent({
     executionId,

@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import AppShell from '../../components/AppShell';
 import api from '../../services/api';
+import { getSocket, joinExecutionRoom, leaveExecutionRoom } from '../../services/socket';
 import {
   ArrowLeft,
   Play,
@@ -23,6 +24,7 @@ import {
   Layers,
   Loader2,
   Code2,
+  Radio,
 } from 'lucide-react';
 
 export default function ExecutionInspectorPage() {
@@ -34,6 +36,8 @@ export default function ExecutionInspectorPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('logs'); // 'logs' | 'data' | 'proof'
+  const [activeAgent, setActiveAgent] = useState('planner');
+  const [isLiveConnected, setIsLiveConnected] = useState(false);
 
   const fetchExecutionData = useCallback(async () => {
     if (!id) return;
@@ -52,16 +56,63 @@ export default function ExecutionInspectorPage() {
     }
   }, [id]);
 
+  // Initial Fetch & Socket.IO Real-Time Stream Subscription
   useEffect(() => {
+    if (!id) return;
+
     fetchExecutionData();
-    // Poll every 3 seconds if status is RUNNING or PENDING
-    const interval = setInterval(() => {
-      if (execution?.status === 'RUNNING' || execution?.status === 'PENDING') {
-        fetchExecutionData();
-      }
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [fetchExecutionData, execution?.status]);
+    joinExecutionRoom(id);
+
+    const socket = getSocket();
+    if (socket) {
+      setIsLiveConnected(socket.connected);
+
+      const handleConnect = () => setIsLiveConnected(true);
+      const handleDisconnect = () => setIsLiveConnected(false);
+
+      const handleLiveLog = (newLog) => {
+        setLogs((prev) => {
+          if (prev.some((l) => l._id === newLog._id)) return prev;
+          return [...prev, newLog];
+        });
+        if (newLog.agent) {
+          setActiveAgent(newLog.agent);
+        }
+      };
+
+      const handleLiveStep = (stepData) => {
+        setExecution((prev) => (prev ? { ...prev, currentNode: stepData.nodeId } : prev));
+      };
+
+      const handleLiveStatus = (statusData) => {
+        setExecution((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: statusData.status || prev.status,
+                duration: statusData.duration !== undefined ? statusData.duration : prev.duration,
+                outputs: statusData.outputs || prev.outputs,
+              }
+            : prev
+        );
+      };
+
+      socket.on('connect', handleConnect);
+      socket.on('disconnect', handleDisconnect);
+      socket.on('execution:log', handleLiveLog);
+      socket.on('execution:step', handleLiveStep);
+      socket.on('execution:status', handleLiveStatus);
+
+      return () => {
+        leaveExecutionRoom(id);
+        socket.off('connect', handleConnect);
+        socket.off('disconnect', handleDisconnect);
+        socket.off('execution:log', handleLiveLog);
+        socket.off('execution:step', handleLiveStep);
+        socket.off('execution:status', handleLiveStatus);
+      };
+    }
+  }, [id, fetchExecutionData]);
 
   const handlePause = async () => {
     setActionLoading(true);
@@ -199,6 +250,13 @@ export default function ExecutionInspectorPage() {
                   >
                     {execution.status}
                   </span>
+
+                  <div className="flex items-center space-x-1.5 px-2 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-[10px] font-mono">
+                    <Radio className={`w-3 h-3 ${isLiveConnected ? 'text-emerald-400 animate-pulse' : 'text-slate-500'}`} />
+                    <span className={isLiveConnected ? 'text-emerald-400' : 'text-slate-500'}>
+                      {isLiveConnected ? 'Live WebSocket' : 'Polling Sync'}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-3 text-xs text-slate-400 font-mono mt-0.5">
                   <span>ID: {execution._id}</span>

@@ -1,4 +1,5 @@
 import ExecutionLog from '../models/ExecutionLog.js';
+import { emitExecutionLog } from '../config/socket.js';
 
 /**
  * Monitoring Agent (Section 4.5)
@@ -23,6 +24,19 @@ export const runMonitoringAgent = async ({
       message,
       metadata,
       timestamp: new Date(),
+    });
+
+    // Broadcast live WebSocket event
+    emitExecutionLog(executionId, {
+      _id: logEntry._id,
+      executionId,
+      workflowId,
+      nodeId,
+      agent,
+      level,
+      message,
+      metadata,
+      timestamp: logEntry.timestamp,
     });
 
     return logEntry;
