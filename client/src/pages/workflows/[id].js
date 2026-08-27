@@ -7,7 +7,8 @@ import NodePalette from '../../components/NodePalette/NodePalette';
 import WorkflowCanvas from '../../components/WorkflowCanvas';
 import NodeConfigPanel from '../../components/NodeConfigPanel/NodeConfigPanel';
 import { useWorkflowStore } from '../../store/workflowStore';
-import { Loader2, Bot, CheckCircle2, Play, AlertCircle, X } from 'lucide-react';
+import api from '../../services/api';
+import { Loader2, Bot, CheckCircle2, Play, AlertCircle, X, ExternalLink, ArrowRight } from 'lucide-react';
 
 export default function WorkflowEditorPage() {
   const router = useRouter();
@@ -20,6 +21,8 @@ export default function WorkflowEditorPage() {
   const [executing, setExecuting] = useState(false);
   const [testModalOpen, setTestModalOpen] = useState(false);
   const [testLogs, setTestLogs] = useState([]);
+  const [activeExecution, setActiveExecution] = useState(null);
+  const [executionError, setExecutionError] = useState(null);
 
   useEffect(() => {
     if (id) {
@@ -27,41 +30,55 @@ export default function WorkflowEditorPage() {
     }
   }, [id, fetchWorkflowById]);
 
-  const handleExecuteTest = () => {
+  const handleExecuteTest = async () => {
+    if (!id) return;
     setTestModalOpen(true);
     setExecuting(true);
+    setExecutionError(null);
+    setActiveExecution(null);
     setTestLogs([
-      { agent: 'Planner Agent', message: 'Validating DAG acyclic graph topology...', status: 'success', time: '0ms' },
+      { agent: 'Planner Agent', message: 'Initializing multi-agent execution pipeline...', status: 'info', time: '0ms' },
     ]);
 
-    setTimeout(() => {
-      setTestLogs((prev) => [
-        ...prev,
-        { agent: 'Execution Agent', message: 'Simulated Gmail trigger payload loaded (Sample INV-2026-001.pdf)', status: 'success', time: '+180ms' },
-      ]);
-    }, 600);
+    try {
+      const res = await api.post(`/workflows/${id}/execute`, {
+        inputs: {
+          vendorName: 'Acme Cloud Infrastructure',
+          subtotal: 2400.0,
+          tax: 240.0,
+          totalAmount: 2640.0,
+        },
+      });
 
-    setTimeout(() => {
-      setTestLogs((prev) => [
-        ...prev,
-        { agent: 'Execution Agent', message: 'Gemini extraction: Vendor=Acme Corp, Subtotal=$1,200.00, Tax=$120.00, Total=$1,320.00', status: 'success', time: '+620ms' },
-      ]);
-    }, 1300);
+      if (res.data?.success && res.data?.execution) {
+        const exec = res.data.execution;
+        setActiveExecution(exec);
 
-    setTimeout(() => {
+        // Fetch real timeline logs from backend
+        const timelineRes = await api.get(`/executions/${exec._id}/timeline`);
+        if (timelineRes.data?.success) {
+          const fetchedLogs = timelineRes.data.logs.map((log, idx) => ({
+            agent: log.agent.toUpperCase() + ' Agent',
+            message: log.message,
+            status: log.level,
+            time: `+${idx * 150}ms`,
+          }));
+          setTestLogs(fetchedLogs);
+        }
+      } else {
+        throw new Error(res.data?.message || 'Execution failed');
+      }
+    } catch (err) {
+      console.error('Execution run error:', err);
+      const errMsg = err.response?.data?.message || err.message || 'Failed to trigger workflow execution';
+      setExecutionError(errMsg);
       setTestLogs((prev) => [
         ...prev,
-        { agent: 'Validation Agent', message: 'Math assertion verified: |($1200 + $120) - $1320| = 0.00 < 0.01', status: 'success', time: '+840ms' },
+        { agent: 'Recovery Agent', message: errMsg, status: 'error', time: 'err' },
       ]);
-    }, 1900);
-
-    setTimeout(() => {
-      setTestLogs((prev) => [
-        ...prev,
-        { agent: 'Monitoring Agent', message: 'Row appended to Google Sheets & Slack confirmation dispatched.', status: 'success', time: '+1120ms' },
-      ]);
+    } finally {
       setExecuting(false);
-    }, 2500);
+    }
   };
 
   if (isLoading || !currentWorkflow) {
@@ -143,12 +160,23 @@ export default function WorkflowEditorPage() {
                 )}
               </div>
 
-              <div className="flex items-center justify-end pt-2">
+              <div className="flex items-center justify-between pt-2">
+                {activeExecution ? (
+                  <Link
+                    href={`/executions/${activeExecution._id}`}
+                    className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-glow transition-all"
+                  >
+                    <span>Inspect Run in Live Timeline</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                ) : (
+                  <div />
+                )}
                 <button
                   onClick={() => setTestModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white transition-colors"
                 >
-                  Done
+                  Close
                 </button>
               </div>
             </div>

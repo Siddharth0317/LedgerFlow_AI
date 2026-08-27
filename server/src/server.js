@@ -6,6 +6,7 @@ import env from './config/env.js';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import workflowRoutes from './routes/workflowRoutes.js';
+import executionRoutes from './routes/executionRoutes.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
 // Initialize Express App
@@ -56,6 +57,7 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/workflows', workflowRoutes);
+app.use('/api/executions', executionRoutes);
 
 // 404 Fallback
 app.use(notFound);

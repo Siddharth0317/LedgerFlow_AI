@@ -9,6 +9,7 @@ import {
   deleteWorkflow,
   generateWorkflowFromPrompt,
 } from '../controllers/workflowController.js';
+import { triggerWorkflowExecution } from '../controllers/executionController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -23,6 +24,7 @@ router.post('/generate', generateWorkflowFromPrompt);
 router.get('/:id', getWorkflowById);
 router.put('/:id', updateWorkflow);
 router.post('/:id/duplicate', duplicateWorkflow);
+router.post('/:id/execute', triggerWorkflowExecution);
 router.delete('/:id', deleteWorkflow);
 
 export default router;

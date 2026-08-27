@@ -209,7 +209,7 @@ export default function WorkflowsPage() {
                     </div>
                   </div>
 
-                  {/* Card Bottom Toolbar */}
+                    {/* Card Bottom Toolbar */}
                   <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between">
                     <div className="flex items-center space-x-1.5">
                       <button
@@ -228,13 +228,31 @@ export default function WorkflowsPage() {
                       </button>
                     </div>
 
-                    <Link
-                      href={`/workflows/${wf._id}`}
-                      className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-indigo-600 text-slate-200 hover:text-white transition-all shadow-sm"
-                    >
-                      <span>Open Canvas</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </Link>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={async () => {
+                          try {
+                            const res = await (await import('../../services/api')).default.post(`/workflows/${wf._id}/execute`);
+                            if (res.data?.success && res.data?.execution?._id) {
+                              router.push(`/executions/${res.data.execution._id}`);
+                            }
+                          } catch (err) {
+                            console.error('Quick execution run failed:', err);
+                          }
+                        }}
+                        className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all"
+                        title="Trigger Instant Execution Run"
+                      >
+                        <span>Run</span>
+                      </button>
+                      <Link
+                        href={`/workflows/${wf._id}`}
+                        className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-indigo-600 text-slate-200 hover:text-white transition-all shadow-sm"
+                      >
+                        <span>Canvas</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))}
