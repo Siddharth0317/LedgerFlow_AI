@@ -1,4 +1,5 @@
 import Workflow from '../models/Workflow.js';
+import Execution from '../models/Execution.js';
 import aiService from '../services/aiService.js';
 
 // Default initial workflow template nodes & edges for new visual workflows
@@ -92,12 +93,24 @@ export const getDashboardStats = async (req, res, next) => {
   try {
     const owner = req.user._id;
 
-    const [totalWorkflows, activeWorkflows, draftWorkflows, pausedWorkflows] = await Promise.all([
+    const [
+      totalWorkflows,
+      activeWorkflows,
+      draftWorkflows,
+      pausedWorkflows,
+      totalExecutions,
+      completedExecutions,
+    ] = await Promise.all([
       Workflow.countDocuments({ owner }),
       Workflow.countDocuments({ owner, status: 'active' }),
       Workflow.countDocuments({ owner, status: 'draft' }),
       Workflow.countDocuments({ owner, status: 'paused' }),
+      Execution.countDocuments({ owner }),
+      Execution.countDocuments({ owner, status: 'COMPLETED' }),
     ]);
+
+    const mathValidationRate =
+      totalExecutions > 0 ? ((completedExecutions / totalExecutions) * 100).toFixed(1) : '100.0';
 
     res.status(200).json({
       success: true,
@@ -106,8 +119,8 @@ export const getDashboardStats = async (req, res, next) => {
         activeWorkflows,
         draftWorkflows,
         pausedWorkflows,
-        totalInvoicesProcessed: 1248, // Aggregated or initial baseline
-        mathValidationRate: 99.8,
+        totalInvoicesProcessed: completedExecutions,
+        mathValidationRate: totalExecutions > 0 ? parseFloat(mathValidationRate) : 0,
         activeAgents: 5,
       },
     });
