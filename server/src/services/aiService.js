@@ -1,6 +1,34 @@
 import env from '../config/env.js';
 
 /**
+ * Helper to strip markdown JSON codeblocks (```json ... ```) from LLM output
+ */
+const extractJsonFromResponse = (raw) => {
+  if (!raw) return null;
+  let text = raw.trim();
+
+  // Strip markdown fences
+  if (text.startsWith('```')) {
+    text = text.replace(/^```[a-zA-Z]*\n?/, '').replace(/\n?```$/, '').trim();
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    // Attempt regex extract if preamble text exists
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) {
+      try {
+        return JSON.parse(match[0]);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
+};
+
+/**
  * Deterministic Financial Rule Engine Fallback
  * Generates structured DAG graph from natural language prompt by parsing intents, triggers, and targets.
  */
@@ -31,11 +59,11 @@ export const generateDeterministicWorkflow = (promptText = '') => {
   }
 
   // 2. Determine AI Model & Extraction Schema
-  let model = 'gemini-1.5-pro';
+  let model = 'gemini-2.5-pro';
   if (text.includes('flash') || text.includes('fast')) {
-    model = 'gemini-1.5-flash';
+    model = 'gemini-2.5-flash';
   } else if (text.includes('claude') || text.includes('openrouter')) {
-    model = 'openrouter/anthropic-claude';
+    model = 'openrouter/gpt-4o-mini';
   }
 
   const extractionFields = ['vendorName', 'invoiceDate', 'subtotal', 'tax', 'totalAmount'];
@@ -174,11 +202,78 @@ export const generateWorkflowGraph = async (prompt) => {
   const geminiKey = process.env.GEMINI_API_KEY;
   const openRouterKey = process.env.OPENROUTER_API_KEY;
 
-  // If Gemini API Key is available, attempt Gemini generation
+  const systemInstruction = `You are an expert autonomous financial workflow architect for Agentflow_AI.
+Given a user request describing financial invoice/expense automation, construct an acyclic DAG visual workflow JSON object conforming EXACTLY to:
+{
+  "name": "Concise Workflow Title (max 60 chars)",
+  "description": "Clear explanation of workflow operation",
+  "triggerConfig": {
+    "type": "gmail|webhook|schedule|manual",
+    "config": { "query": "string" }
+  },
+  "nodes": [
+    {
+      "id": "node-1",
+      "type": "triggerNode",
+      "position": { "x": 80, "y": 160 },
+      "data": {
+        "label": "Trigger Label",
+        "triggerType": "gmail|webhook|schedule|manual",
+        "description": "Trigger details",
+        "query": "query filter"
+      }
+    },
+    {
+      "id": "node-2",
+      "type": "aiNode",
+      "position": { "x": 420, "y": 160 },
+      "data": {
+        "label": "Gemini Extraction Agent",
+        "model": "gemini-2.5-pro",
+        "extractionFields": ["vendorName", "invoiceDate", "subtotal", "tax", "totalAmount", "lineItems"],
+        "confidenceThreshold": 0.90
+      }
+    },
+    {
+      "id": "node-3",
+      "type": "logicNode",
+      "position": { "x": 760, "y": 160 },
+      "data": {
+        "label": "Financial Formula Assertion",
+        "rule": "subtotal + tax == totalAmount",
+        "tolerance": 0.01
+      }
+    },
+    {
+      "id": "node-4",
+      "type": "actionNode",
+      "position": { "x": 1100, "y": 160 },
+      "data": {
+        "label": "Google Sheet & Slack",
+        "actionType": "google-sheets|slack|discord",
+        "sheetId": "Company_Ledger_2026",
+        "channel": "#finance-ops"
+      }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1-2", "source": "node-1", "target": "node-2", "animated": true, "data": { "label": "Document Stream" } },
+    { "id": "edge-2-3", "source": "node-2", "target": "node-3", "animated": true, "data": { "label": "Extracted JSON" } },
+    { "id": "edge-3-4", "source": "node-3", "target": "node-4", "animated": true, "data": { "label": "Validated Record" } }
+  ],
+  "tags": ["Invoice", "Operations", "AI-Generated"],
+  "confidenceScore": 0.98,
+  "explanation": "Brief explanation of how the multi-agent nodes process the request"
+}
+
+Ensure node coordinates progress horizontally (x: 80, 420, 760, 1100). OUTPUT STRICT RAW JSON ONLY. No markdown wrapping.`;
+
+  // 1. Primary: Google Gemini API (gemini-2.5-flash / gemini-2.5-pro)
   if (geminiKey) {
     try {
+      const geminiModel = 'gemini-2.5-flash';
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -187,31 +282,7 @@ export const generateWorkflowGraph = async (prompt) => {
               {
                 parts: [
                   {
-                    text: `You are an expert autonomous financial workflow architect for Agentflow_AI.
-Given this user prompt: "${prompt}"
-
-Generate a valid visual DAG workflow JSON object conforming to:
-{
-  "name": "Concise workflow name",
-  "description": "Clear workflow description",
-  "triggerConfig": { "type": "gmail|webhook|schedule|manual", "config": {} },
-  "nodes": [
-    {
-      "id": "node-1",
-      "type": "triggerNode|aiNode|logicNode|actionNode",
-      "position": { "x": 100, "y": 150 },
-      "data": { "label": "Node Label", ... }
-    }
-  ],
-  "edges": [
-    { "id": "edge-1-2", "source": "node-1", "target": "node-2", "animated": true }
-  ],
-  "tags": ["Tag1", "Tag2"],
-  "confidenceScore": 0.96,
-  "explanation": "Brief rationale for node placement"
-}
-
-Ensure all nodes have increasing x-coordinates (80, 420, 760, 1100). Output STRICT JSON only.`,
+                    text: `${systemInstruction}\n\nUser Request: "${prompt}"`,
                   },
                 ],
               },
@@ -227,20 +298,23 @@ Ensure all nodes have increasing x-coordinates (80, 420, 760, 1100). Output STRI
       if (response.ok) {
         const data = await response.json();
         const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (rawContent) {
-          const parsed = JSON.parse(rawContent);
+        const parsed = extractJsonFromResponse(rawContent);
+        if (parsed && parsed.nodes && parsed.nodes.length > 0) {
           return {
             ...parsed,
-            source: 'Google Gemini 1.5 Pro',
+            source: 'Google Gemini 2.5 Flash',
           };
         }
+      } else {
+        const errData = await response.json();
+        console.warn('Gemini API returned error:', errData.error?.message);
       }
     } catch (err) {
-      console.warn('Gemini API generation failed, falling back to rule engine:', err.message);
+      console.warn('Gemini API call exception:', err.message);
     }
   }
 
-  // If OpenRouter Key is available, attempt OpenRouter generation
+  // 2. Secondary: OpenRouter API (openai/gpt-4o-mini)
   if (openRouterKey) {
     try {
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -248,13 +322,15 @@ Ensure all nodes have increasing x-coordinates (80, 420, 760, 1100). Output STRI
         headers: {
           Authorization: `Bearer ${openRouterKey}`,
           'Content-Type': 'application/json',
+          'HTTP-Referer': 'http://localhost:3000',
+          'X-Title': 'Agentflow AI',
         },
         body: JSON.stringify({
-          model: 'anthropic/claude-3.5-sonnet',
+          model: 'openai/gpt-4o-mini',
           messages: [
             {
               role: 'system',
-              content: 'You generate visual node workflow DAG JSONs for Agentflow_AI. Output strictly JSON.',
+              content: systemInstruction,
             },
             {
               role: 'user',
@@ -267,20 +343,23 @@ Ensure all nodes have increasing x-coordinates (80, 420, 760, 1100). Output STRI
       if (response.ok) {
         const data = await response.json();
         const rawContent = data.choices?.[0]?.message?.content;
-        if (rawContent) {
-          const parsed = JSON.parse(rawContent);
+        const parsed = extractJsonFromResponse(rawContent);
+        if (parsed && parsed.nodes && parsed.nodes.length > 0) {
           return {
             ...parsed,
-            source: 'OpenRouter / Claude 3.5 Sonnet',
+            source: 'OpenRouter (GPT-4o Mini)',
           };
         }
+      } else {
+        const errData = await response.json();
+        console.warn('OpenRouter API returned error:', errData.error?.message);
       }
     } catch (err) {
-      console.warn('OpenRouter API generation failed, falling back to rule engine:', err.message);
+      console.warn('OpenRouter API call exception:', err.message);
     }
   }
 
-  // Fallback to Deterministic Financial Rule Engine
+  // 3. Fallback: Deterministic Financial Rule Engine
   return generateDeterministicWorkflow(prompt);
 };
 
