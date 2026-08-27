@@ -58,15 +58,23 @@ export const useAuthStore = create((set, get) => ({
 
   /**
    * Authenticate user with email and password
+   * Supports login(email, password) OR login({ email, password })
    */
-  login: async (credentials) => {
+  login: async (emailOrCredentials, maybePassword) => {
     set({ isLoading: true, error: null });
     try {
-      // Support both (email, password) or ({ email, password })
-      const payload =
-        typeof credentials === 'string'
-          ? { email: arguments[0], password: arguments[1] }
-          : credentials;
+      let payload;
+      if (typeof emailOrCredentials === 'object' && emailOrCredentials !== null) {
+        payload = {
+          email: emailOrCredentials.email?.trim(),
+          password: emailOrCredentials.password,
+        };
+      } else {
+        payload = {
+          email: String(emailOrCredentials || '').trim(),
+          password: maybePassword,
+        };
+      }
 
       const response = await api.post('/auth/login', payload);
       const { token, user } = response.data;
@@ -87,7 +95,9 @@ export const useAuthStore = create((set, get) => ({
       return { success: true, user };
     } catch (error) {
       const message =
-        error.response?.data?.message || 'Login failed. Please verify credentials.';
+        error.response?.data?.message ||
+        (error.response?.data?.errors && error.response.data.errors[0]?.msg) ||
+        'Login failed. Please verify credentials.';
       set({ isLoading: false, error: message });
       return { success: false, error: message };
     }
@@ -95,11 +105,29 @@ export const useAuthStore = create((set, get) => ({
 
   /**
    * Register a new user account
+   * Supports register(name, email, password, role) OR register({ name, email, password, role })
    */
-  register: async (userData) => {
+  register: async (nameOrUserData, email, password, role = 'operator') => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.post('/auth/register', userData);
+      let payload;
+      if (typeof nameOrUserData === 'object' && nameOrUserData !== null) {
+        payload = {
+          name: nameOrUserData.name?.trim(),
+          email: nameOrUserData.email?.trim(),
+          password: nameOrUserData.password,
+          role: nameOrUserData.role || 'operator',
+        };
+      } else {
+        payload = {
+          name: String(nameOrUserData || '').trim(),
+          email: String(email || '').trim(),
+          password,
+          role: role || 'operator',
+        };
+      }
+
+      const response = await api.post('/auth/register', payload);
       const { token, user } = response.data;
 
       if (typeof window !== 'undefined') {
