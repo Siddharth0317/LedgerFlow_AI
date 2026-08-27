@@ -18,7 +18,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('agentflow_token');
+      const token = localStorage.getItem('ledgerflow_token') || localStorage.getItem('agentflow_token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -30,16 +30,17 @@ api.interceptors.request.use(
   }
 );
 
-// Response Interceptor: Handle auth expiration & errors
+// Response interceptor for handling 401 Unauthorized errors globally
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
       if (typeof window !== 'undefined') {
-        const currentPath = window.location.pathname;
-        if (currentPath !== '/login' && currentPath !== '/register' && currentPath !== '/') {
+        const isAuthRoute =
+          window.location.pathname === '/login' || window.location.pathname === '/register';
+        if (!isAuthRoute) {
+          localStorage.removeItem('ledgerflow_token');
+          localStorage.removeItem('ledgerflow_user');
           localStorage.removeItem('agentflow_token');
           localStorage.removeItem('agentflow_user');
           window.location.href = '/login?expired=true';

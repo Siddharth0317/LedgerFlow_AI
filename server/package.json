@@ -1,7 +1,7 @@
 {
-  "name": "agentflow-ai-server",
+  "name": "ledgerflow-ai-server",
   "version": "1.0.0",
-  "description": "Agentflow_AI Backend - Autonomous Invoice & Expense Operations Hub",
+  "description": "LedgerFlow_AI Backend - Autonomous Invoice & Expense Operations Hub",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

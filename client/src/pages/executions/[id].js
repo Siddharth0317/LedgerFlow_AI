@@ -218,7 +218,7 @@ export default function ExecutionInspectorPage() {
     <ProtectedRoute>
       <AppShell>
         <Head>
-          <title>Execution Inspector — Agentflow_AI</title>
+          <title>Execution Inspector — LedgerFlow_AI</title>
         </Head>
 
         <div className="space-y-6">

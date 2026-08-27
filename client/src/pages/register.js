@@ -80,7 +80,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-[#090D16] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
       <Head>
-        <title>Operator Registration — Agentflow_AI</title>
+        <title>Operator Registration — LedgerFlow_AI</title>
       </Head>
 
       {/* Decorative gradient glow */}

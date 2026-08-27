@@ -172,7 +172,7 @@ export default function WorkflowBuilderPage() {
     <ProtectedRoute>
       <AppShell>
         <Head>
-          <title>AI Prompt Studio — Agentflow_AI</title>
+          <title>AI Prompt Studio — LedgerFlow_AI</title>
         </Head>
 
         <div className="space-y-6">

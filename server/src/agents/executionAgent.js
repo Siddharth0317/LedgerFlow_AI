@@ -96,7 +96,7 @@ export const runExecutionAgent = async ({ node, inputPayload = {} }) => {
         tax: parseFloat(inputPayload.tax || 240.0),
         totalAmount: parseFloat(inputPayload.totalAmount || 2640.0),
         lineItems: inputPayload.lineItems || [],
-        extractedBy: 'Agentflow Extraction Engine (Deterministic)',
+        extractedBy: 'LedgerFlow Extraction Engine (Deterministic)',
       },
       message: `Extracted 6 financial fields for ${inputPayload.vendorName || 'Acme Cloud Infrastructure'}`,
     };

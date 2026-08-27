@@ -96,7 +96,7 @@ export default function WorkflowEditorPage() {
   return (
     <ProtectedRoute>
       <Head>
-        <title>{currentWorkflow?.name || 'Canvas Editor'} — Agentflow_AI</title>
+        <title>{currentWorkflow?.name || 'Canvas Editor'} — LedgerFlow_AI</title>
       </Head>
 
       <div className="h-screen w-screen bg-[#080C15] flex flex-col overflow-hidden text-slate-100">

@@ -49,7 +49,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
             </div>
             <div>
               <div className="flex items-center space-x-1.5">
-                <span className="font-bold text-base text-white tracking-tight">Agentflow</span>
+                <span className="font-bold text-base text-white tracking-tight">LedgerFlow</span>
                 <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
                   AI
                 </span>

@@ -1,6 +1,7 @@
 {
-  "name": "agentflow-ai-client",
+  "name": "ledgerflow-ai-client",
   "version": "1.0.0",
+  "description": "LedgerFlow_AI Client - Autonomous Invoice & Expense Operations Hub",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",

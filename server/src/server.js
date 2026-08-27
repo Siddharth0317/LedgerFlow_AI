@@ -64,7 +64,7 @@ if (env.NODE_ENV !== 'test') {
 // Root API Welcome Endpoint
 app.get('/', (req, res) => {
   res.status(200).json({
-    name: 'Agentflow_AI (LedgerFlow) Backend API',
+    name: 'LedgerFlow_AI Backend API',
     status: 'online',
     version: '1.0.0',
     documentation: 'https://github.com/Siddharth0317/LedgerFlow_AI#readme',
@@ -106,7 +106,7 @@ const startServer = async () => {
 
     const server = httpServer.listen(env.PORT, () => {
       console.log('====================================================');
-      console.log(`🚀 Agentflow_AI Server running on port ${env.PORT}`);
+      console.log(`🚀 LedgerFlow_AI Server running on port ${env.PORT}`);
       console.log(`⚡ WebSockets: Socket.IO initialized`);
       console.log(`🌐 Environment: ${env.NODE_ENV}`);
       console.log(`🔒 CORS Origin: ${env.CLIENT_URL}`);

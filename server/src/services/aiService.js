@@ -180,7 +180,7 @@ export const generateDeterministicWorkflow = (promptText = '') => {
 
   return {
     name: cleanedTitle.charAt(0).toUpperCase() + cleanedTitle.slice(1) || 'AI Generated Invoice Workflow',
-    description: promptText || 'Autonomous invoice processing workflow generated via Agentflow AI.',
+    description: promptText || 'Autonomous invoice processing workflow generated via LedgerFlow AI.',
     triggerConfig: { type: triggerType, config: { query } },
     nodes,
     edges,
@@ -202,7 +202,7 @@ export const generateWorkflowGraph = async (prompt) => {
   const geminiKey = process.env.GEMINI_API_KEY;
   const openRouterKey = process.env.OPENROUTER_API_KEY;
 
-  const systemInstruction = `You are an expert autonomous financial workflow architect for Agentflow_AI.
+  const systemInstruction = `You are an expert autonomous financial workflow architect for LedgerFlow_AI.
 Given a user request describing financial invoice/expense automation, construct an acyclic DAG visual workflow JSON object conforming EXACTLY to:
 {
   "name": "Concise Workflow Title (max 60 chars)",
@@ -323,7 +323,7 @@ Ensure node coordinates progress horizontally (x: 80, 420, 760, 1100). OUTPUT ST
           Authorization: `Bearer ${openRouterKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'http://localhost:3000',
-          'X-Title': 'Agentflow AI',
+          'X-Title': 'LedgerFlow AI',
         },
         body: JSON.stringify({
           model: 'openai/gpt-4o-mini',

@@ -70,7 +70,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#090D16] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
       <Head>
-        <title>Operator Sign In — Agentflow_AI</title>
+        <title>Operator Sign In — LedgerFlow_AI</title>
       </Head>
 
       {/* Decorative gradient glow */}
@@ -84,7 +84,7 @@ export default function LoginPage() {
           </div>
         </Link>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-          Welcome to Agentflow_AI
+          Welcome to LedgerFlow_AI
         </h2>
         <p className="mt-2 text-xs sm:text-sm text-slate-400">
           Sign in to access your autonomous invoice & operations hub

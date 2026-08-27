@@ -26,7 +26,7 @@ export default function ProtectedRoute({ children }) {
           <Loader2 className="w-20 h-20 text-indigo-500 animate-spin absolute" />
         </div>
         <div className="text-center space-y-1">
-          <p className="text-lg font-semibold text-white tracking-wide">Agentflow_AI</p>
+          <p className="text-lg font-semibold text-white tracking-wide">LedgerFlow_AI</p>
           <p className="text-xs text-slate-400 font-mono">Verifying secure operator session...</p>
         </div>
       </div>

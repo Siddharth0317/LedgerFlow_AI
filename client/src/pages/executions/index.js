@@ -90,7 +90,7 @@ export default function ExecutionsPage() {
     <ProtectedRoute>
       <AppShell>
         <Head>
-          <title>Execution History — Agentflow_AI</title>
+          <title>Execution History — LedgerFlow_AI</title>
         </Head>
 
         <div className="space-y-6">

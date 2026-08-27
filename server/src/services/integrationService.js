@@ -130,7 +130,7 @@ export const saveSlackIntegration = async (userId, webhookUrl, channelName = '#f
       },
       metadata: {
         channelName: channelName.startsWith('#') ? channelName : `#${channelName}`,
-        botName: 'Agentflow Bot',
+        botName: 'LedgerFlow Bot',
         workspaceName,
       },
       status: 'ACTIVE',
@@ -161,7 +161,7 @@ export const saveDiscordIntegration = async (userId, webhookUrl, channelName = '
       },
       metadata: {
         channelName: channelName.startsWith('#') ? channelName : `#${channelName}`,
-        botName: 'Agentflow Bot',
+        botName: 'LedgerFlow Bot',
         workspaceName,
       },
       status: 'ACTIVE',
@@ -192,7 +192,7 @@ export const testIntegration = async (integrationId, userId) => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            text: `🧪 *Agentflow_AI Connection Test*: Successfully connected to channel ${integration.metadata?.channelName || '#general'}!`,
+            text: `🧪 *LedgerFlow_AI Connection Test*: Successfully connected to channel ${integration.metadata?.channelName || '#general'}!`,
           }),
         });
         if (!response.ok) throw new Error(`Slack API error: ${response.statusText}`);
@@ -215,7 +215,7 @@ export const testIntegration = async (integrationId, userId) => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            content: `🧪 **Agentflow_AI Connection Test**: Successfully connected to channel ${integration.metadata?.channelName || '#general'}!`,
+            content: `🧪 **LedgerFlow_AI Connection Test**: Successfully connected to channel ${integration.metadata?.channelName || '#general'}!`,
           }),
         });
         if (!response.ok) throw new Error(`Discord API error: ${response.statusText}`);

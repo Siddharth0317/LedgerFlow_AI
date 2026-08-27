@@ -14,7 +14,7 @@ export default function App({ Component, pageProps }) {
   return (
     <>
       <Head>
-        <title>Agentflow_AI — Autonomous Invoice & Expense Operations Hub</title>
+        <title>LedgerFlow_AI — Autonomous Invoice & Expense Operations Hub</title>
         <meta
           name="description"
           content="AI-powered operations platform for automated invoice parsing, validation, and multi-agent workflow orchestration."

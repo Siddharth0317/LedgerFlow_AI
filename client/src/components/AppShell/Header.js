@@ -29,7 +29,7 @@ export default function Header({ setIsMobileOpen, setIsNotificationOpen, unreadC
     if (path.startsWith('/executions')) return 'Multi-Agent Execution Timeline';
     if (path.startsWith('/integrations')) return 'Third-Party Connected Accounts';
     if (path.startsWith('/settings')) return 'Platform & Security Settings';
-    return 'Agentflow_AI';
+    return 'LedgerFlow_AI';
   };
 
   return (

@@ -86,7 +86,7 @@ export default function WorkflowsPage() {
     <ProtectedRoute>
       <AppShell>
         <Head>
-          <title>Workflows — Agentflow_AI</title>
+          <title>Workflows — LedgerFlow_AI</title>
         </Head>
 
         <div className="space-y-6">

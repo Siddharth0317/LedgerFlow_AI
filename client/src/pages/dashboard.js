@@ -100,7 +100,7 @@ export default function DashboardPage() {
     <ProtectedRoute>
       <AppShell>
         <Head>
-          <title>Operations Console — Agentflow_AI</title>
+          <title>Operations Console — LedgerFlow_AI</title>
         </Head>
 
         <div className="space-y-8">

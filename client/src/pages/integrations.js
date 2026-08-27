@@ -198,7 +198,7 @@ export default function IntegrationsPage() {
     <ProtectedRoute>
       <AppShell>
         <Head>
-          <title>Integrations & OAuth — Agentflow_AI</title>
+          <title>Integrations & OAuth — LedgerFlow_AI</title>
         </Head>
 
         <div className="space-y-6">
@@ -324,7 +324,7 @@ export default function IntegrationsPage() {
                       Channel: <span className="text-purple-400">{slackIntegration.metadata?.channelName}</span>
                     </p>
                     <p className="text-slate-400 text-[11px]">
-                      Bot: {slackIntegration.metadata?.botName || 'Agentflow Bot'}
+                      Bot: {slackIntegration.metadata?.botName || 'LedgerFlow Bot'}
                     </p>
                   </div>
                 )}

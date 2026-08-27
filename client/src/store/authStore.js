@@ -17,8 +17,10 @@ export const useAuthStore = create((set, get) => ({
       return;
     }
 
-    const storedToken = localStorage.getItem('agentflow_token');
-    const storedUser = localStorage.getItem('agentflow_user');
+    const storedToken =
+      localStorage.getItem('ledgerflow_token') || localStorage.getItem('agentflow_token');
+    const storedUser =
+      localStorage.getItem('ledgerflow_user') || localStorage.getItem('agentflow_user');
 
     if (!storedToken) {
       set({ user: null, token: null, isAuthenticated: false, isLoading: false });
@@ -34,63 +36,59 @@ export const useAuthStore = create((set, get) => ({
       const response = await api.get('/auth/me');
       if (response.data?.success && response.data?.user) {
         const verifiedUser = response.data.user;
-        localStorage.setItem('agentflow_user', JSON.stringify(verifiedUser));
+        localStorage.setItem('ledgerflow_user', JSON.stringify(verifiedUser));
+        localStorage.setItem('ledgerflow_token', storedToken);
         set({
           user: verifiedUser,
           token: storedToken,
           isAuthenticated: true,
           isLoading: false,
-          error: null,
         });
-      } else {
-        throw new Error('Failed to verify token');
+        return;
       }
-    } catch (err) {
-      console.warn('Authentication token verification failed:', err.message);
+    } catch (e) {
+      console.warn('Token verification failed:', e.message);
+      localStorage.removeItem('ledgerflow_token');
+      localStorage.removeItem('ledgerflow_user');
       localStorage.removeItem('agentflow_token');
       localStorage.removeItem('agentflow_user');
-      set({
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-      });
     }
+    set({ token: null, user: null, isAuthenticated: false, isLoading: false });
   },
 
   /**
    * Authenticate user with email and password
    */
-  login: async (email, password) => {
+  login: async (credentials) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.post('/auth/login', { email, password });
+      // Support both (email, password) or ({ email, password })
+      const payload =
+        typeof credentials === 'string'
+          ? { email: arguments[0], password: arguments[1] }
+          : credentials;
+
+      const response = await api.post('/auth/login', payload);
       const { token, user } = response.data;
 
-      localStorage.setItem('agentflow_token', token);
-      localStorage.setItem('agentflow_user', JSON.stringify(user));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ledgerflow_token', token);
+        localStorage.setItem('ledgerflow_user', JSON.stringify(user));
+      }
 
       set({
-        user,
         token,
+        user,
         isAuthenticated: true,
         isLoading: false,
         error: null,
       });
 
       return { success: true, user };
-    } catch (err) {
+    } catch (error) {
       const message =
-        err.response?.data?.message ||
-        (err.response?.data?.errors && err.response.data.errors[0]?.msg) ||
-        'Login failed. Please check your credentials.';
-
-      set({
-        error: message,
-        isLoading: false,
-        isAuthenticated: false,
-      });
-
+        error.response?.data?.message || 'Login failed. Please verify credentials.';
+      set({ isLoading: false, error: message });
       return { success: false, error: message };
     }
   },
@@ -98,19 +96,16 @@ export const useAuthStore = create((set, get) => ({
   /**
    * Register a new user account
    */
-  register: async (name, email, password, role = 'operator') => {
+  register: async (userData) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.post('/auth/register', {
-        name,
-        email,
-        password,
-        role,
-      });
+      const response = await api.post('/auth/register', userData);
       const { token, user } = response.data;
 
-      localStorage.setItem('agentflow_token', token);
-      localStorage.setItem('agentflow_user', JSON.stringify(user));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ledgerflow_token', token);
+        localStorage.setItem('ledgerflow_user', JSON.stringify(user));
+      }
 
       set({
         user,
@@ -142,6 +137,8 @@ export const useAuthStore = create((set, get) => ({
    */
   logout: () => {
     if (typeof window !== 'undefined') {
+      localStorage.removeItem('ledgerflow_token');
+      localStorage.removeItem('ledgerflow_user');
       localStorage.removeItem('agentflow_token');
       localStorage.removeItem('agentflow_user');
     }

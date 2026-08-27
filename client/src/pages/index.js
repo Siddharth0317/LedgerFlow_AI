@@ -57,22 +57,20 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#090D16] text-slate-100 flex flex-col selection:bg-indigo-500/30 selection:text-indigo-200">
       <Head>
-        <title>Agentflow_AI — Autonomous Invoice & Expense Operations Hub</title>
+        <title>LedgerFlow_AI — Autonomous Invoice & Expense Operations Hub</title>
       </Head>
 
       {/* Navigation Bar */}
       <nav className="sticky top-0 z-40 bg-[#090D16]/80 backdrop-blur-md border-b border-slate-800/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-glow">
-              <Bot className="w-5 h-5 text-white" />
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center shadow-glow">
+              <Bot className="w-4 h-4 text-white" />
             </div>
-            <div className="flex items-center space-x-1.5">
-              <span className="font-bold text-lg text-white tracking-tight">Agentflow</span>
-              <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-                AI
-              </span>
-            </div>
+            <span className="font-bold text-lg text-white tracking-tight">LedgerFlow</span>
+            <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+              AI
+            </span>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -212,7 +210,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-2">
             <Bot className="w-4 h-4 text-indigo-400" />
-            <span className="font-semibold text-slate-400">Agentflow_AI</span>
+            <span className="font-semibold text-slate-400">LedgerFlow_AI</span>
             <span>— Autonomous Invoice & Expense Operations Hub</span>
           </div>
           <p className="text-[11px] font-mono text-slate-600">
