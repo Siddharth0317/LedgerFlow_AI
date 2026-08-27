@@ -1,11 +1,32 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import NotificationDrawer from './NotificationDrawer';
+import api from '../../services/api';
+import { useAuthStore } from '../../store/authStore';
 
 export default function AppShell({ children }) {
+  const { isAuthenticated } = useAuthStore();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchUnreadCount = async () => {
+    if (!isAuthenticated) return;
+    try {
+      const res = await api.get('/notifications');
+      if (res.data?.success) {
+        setUnreadCount(res.data.unreadCount || 0);
+      }
+    } catch (err) {
+      // Quiet fail if not authenticated yet
+      setUnreadCount(0);
+    }
+  };
+
+  useEffect(() => {
+    fetchUnreadCount();
+  }, [isAuthenticated]);
 
   return (
     <div className="min-h-screen bg-[#090D16] text-slate-100 flex flex-col antialiased">
@@ -21,7 +42,7 @@ export default function AppShell({ children }) {
         <Header
           setIsMobileOpen={setIsMobileOpen}
           setIsNotificationOpen={setIsNotificationOpen}
-          unreadCount={3}
+          unreadCount={unreadCount}
         />
 
         {/* Dynamic Page Content */}
@@ -33,7 +54,11 @@ export default function AppShell({ children }) {
       {/* Slide-out Notification Drawer */}
       <NotificationDrawer
         isOpen={isNotificationOpen}
-        onClose={() => setIsNotificationOpen(false)}
+        onClose={() => {
+          setIsNotificationOpen(false);
+          fetchUnreadCount();
+        }}
+        onUnreadChange={(count) => setUnreadCount(count)}
       />
     </div>
   );

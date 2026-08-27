@@ -12,7 +12,7 @@ import {
   Loader2,
 } from 'lucide-react';
 
-export default function NotificationDrawer({ isOpen, onClose }) {
+export default function NotificationDrawer({ isOpen, onClose, onUnreadChange }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -21,7 +21,10 @@ export default function NotificationDrawer({ isOpen, onClose }) {
     try {
       const res = await api.get('/notifications');
       if (res.data?.success) {
-        setNotifications(res.data.notifications || []);
+        const list = res.data.notifications || [];
+        setNotifications(list);
+        const count = res.data.unreadCount || list.filter((n) => !n.read).length;
+        if (onUnreadChange) onUnreadChange(count);
       }
     } catch (err) {
       console.error('Failed to load notifications:', err);
@@ -40,6 +43,7 @@ export default function NotificationDrawer({ isOpen, onClose }) {
     try {
       await api.patch('/notifications/read-all');
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      if (onUnreadChange) onUnreadChange(0);
     } catch (err) {
       console.error(err);
     }
